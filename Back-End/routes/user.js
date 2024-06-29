@@ -1,7 +1,9 @@
 const router = require("express").Router();
 const User = require('../models/users');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const {authenticateToken } = require('./userAuth');
+
 // Sign-up
 router.post("/sign-up", async (req, res) => {
     try {
@@ -53,7 +55,7 @@ router.post("/sign-up", async (req, res) => {
 });
 
 //sign-in
-router.post("/sign-in", async(req,res)=>{
+router.post("/sign-in" ,async (req,res)=>{
     try
     {
         const {username,password}= req.body
@@ -82,6 +84,35 @@ router.post("/sign-in", async(req,res)=>{
     catch(error)
     {
         res.status(500).json({message: "Internal server error"})
+    }
+})
+
+//get-user-info
+router.get("/info", authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.headers;
+        const user = await User.findById(id).select('-password');
+        if (!user) {
+            return res.status(404).json({ message: "User not found" })
+        }
+        return res.status(200).json(user);
+    } catch (error) {
+        console.error("Error in getting user info:", error)
+        return res.status(500).json({ message: "Internal Server Error" })
+    }
+})
+
+
+//updata address
+router.put('/update-address', authenticateToken, async (req, res) =>{
+    try{
+        const { id } = req.headers;
+        const {address} = req.body;
+        await User.findByIdAndUpdate(id, {address:address})
+        return res.status(200).json({message : "Address update sucessfuly"});
+    } catch(error)
+    {
+        return res.status(500).json({ message: "Internal Server Error" })
     }
 })
 module.exports = router;

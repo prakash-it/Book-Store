@@ -18,7 +18,7 @@ price:{
     type: Number,
     required: true,
 }, 
-desc:{
+dec:{
     type: String,
     required: true,
 },
